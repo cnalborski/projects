@@ -1,0 +1,16 @@
+ Wolumin w stacji C nie ma etykiety.
+ Numer seryjny woluminu: F827-D8CB
+
+ Katalog: c:\Projekty\C\mcb\head
+
+[.]      [..]     3D.001   3D.002   3D.003   3D.004   3D.005   3D.006
+3D.007   3D.008   3D.009   3D.010   3D.011   3D.012   3D.013   3D.014
+3D.015   3D.016   3D.017   3D.018   3D.019   3D.020   3D.021   3D.022
+3D.023   3D.024   3D.025   3D.026   3D.027   3D.028   3D.029   3D.030
+3D.031   3D.032   3D.033   3D.034   3D.035   3D.036   3D.037   3D.038
+3D.039   3D.040   3D.041   3D.042   3D.043   3D.044   3D.045   3D.046
+3D.047   3D.048   3D.049   3D.050   3D.051   3D.052   3D.053   3D.054
+3D.055   3D.056   3D.057   3D.058   3D.059   3D.060   3D.061   3D.062
+3D.063   3D.064   3d.txt   
+              65 plik(¢w)       4ÿ194ÿ304 bajt¢w
+               2 katalog(¢w)   2ÿ542ÿ600ÿ192 bajt¢w wolnych

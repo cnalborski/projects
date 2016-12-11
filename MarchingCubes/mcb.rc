@@ -1,0 +1,350 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "windows.h"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+#include "resource.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Polish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_PLK)
+#ifdef _WIN32
+LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
+#pragma code_page(1250)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_WCZYTYWANIE DIALOG DISCARDABLE  0, 0, 332, 151
+STYLE DS_ABSALIGN | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Przelicz"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Rozpocznij",IDOK,141,130,51,14
+    PUSHBUTTON      "Zrezygnuj",IDCANCEL,214,130,53,14,NOT WS_VISIBLE | 
+                    WS_DISABLED
+    CONTROL         "Progress1",IDC_PROGRESS1,"msctls_progress32",WS_BORDER,
+                    7,34,318,11
+    CONTROL         "Progress1",IDC_PROGRESS2,"msctls_progress32",WS_BORDER,
+                    7,61,318,11
+    LTEXT           "Konwersja na voxele",IDC_STATIC,7,24,78,10
+    LTEXT           "Generowanie trójk¹tów algorytmem Marching Cubes",
+                    IDC_STATIC,7,51,185,10
+    LTEXT           "Plik:",IDC_PLIKTEXT,7,7,19,9
+    LTEXT           "",IDC_PLIK,29,7,296,9
+    CONTROL         "Progress1",IDC_PROGRESS3,"msctls_progress32",WS_BORDER,
+                    7,90,318,11
+    LTEXT           "Przygotowanie danych 3D",IDC_STATIC,7,80,185,10
+END
+
+IDD_USTAWIENIAKOLOROW DIALOG DISCARDABLE  0, 0, 263, 314
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Ustawienia kolorów"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,105,286,50,14
+    PUSHBUTTON      "Anuluj",IDCANCEL,167,286,50,14,NOT WS_VISIBLE
+    PUSHBUTTON      "Zmieñ",IDC_ZMIEN_KOLORTLA,156,27,36,16
+    PUSHBUTTON      "Zmieñ",IDC_ZMIEN_KOLORTLIN_DRUT,156,79,36,16
+    PUSHBUTTON      "Zmieñ",IDC_ZMIEN_KOLORTLIN_FLAT,156,130,36,16
+    PUSHBUTTON      "Zmieñ",IDC_ZMIEN_KOLORWYPEL,156,158,36,16
+    PUSHBUTTON      "Zmieñ",IDC_ZMIEN_KOLOR_POCZ,156,214,36,16
+    PUSHBUTTON      "Zmieñ",IDC_ZMIEN_KOLOR_KON,156,245,36,16
+    GROUPBOX        "Wspólne",IDC_STATIC,12,10,230,42
+    GROUPBOX        "Drut",IDC_STATIC,11,63,232,41
+    GROUPBOX        "P³askie",IDC_STATIC,11,113,232,78
+    GROUPBOX        "Oœwietlenie",IDC_STATIC,12,198,230,77
+    EDITTEXT        IDC_KOLORTLA,119,25,33,19,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "Kolor t³a:",IDC_STATIC,48,28,30,16
+    EDITTEXT        IDC_KOLORLIN_FLAT,119,129,32,17,ES_AUTOHSCROLL | 
+                    WS_DISABLED
+    LTEXT           "Kolor linii:",IDC_STATIC,48,133,30,16
+    EDITTEXT        IDC_KOLORWYPEL,119,157,32,17,ES_AUTOHSCROLL | 
+                    WS_DISABLED
+    LTEXT           "Kolor wype³nienia:",IDC_STATIC,48,158,64,16
+    EDITTEXT        IDC_KOLOR_POCZ,119,212,32,17,ES_AUTOHSCROLL | 
+                    WS_DISABLED
+    LTEXT           "Kolor pocz¹tkowy:",IDC_STATIC,48,215,67,16
+    EDITTEXT        IDC_KOLOR_KON,119,244,32,17,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "Kolor koñcowy:",IDC_STATIC,48,240,64,16
+    EDITTEXT        IDC_KOLORLIN_DRUT,119,78,32,17,ES_AUTOHSCROLL | 
+                    WS_DISABLED
+    LTEXT           "Kolor linii:",IDC_STATIC,48,80,30,16
+END
+
+IDD_I3D DIALOG DISCARDABLE  0, 0, 475, 330
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Zastosuj",IDOK,319,303,50,14
+    PUSHBUTTON      "Anuluj",IDCANCEL,379,303,50,14
+    PUSHBUTTON      "Dodaj z pliku",IDC_WARSTWY_DODAJZPLIKU,25,237,50,14
+    PUSHBUTTON      "Dodaj kopiê",IDC_WARSTWY_KOPIA,83,237,50,14
+    PUSHBUTTON      "Usuñ",IDC_WARSTWY_USUN,25,255,50,14
+    PUSHBUTTON      "Zmieñ",IDC_WARSTWY_ZMIENWARSTWE,83,255,50,14
+    PUSHBUTTON      "Podgl¹d",IDC_WARSTWY_PODGLAD,146,237,97,14
+    PUSHBUTTON      "Ustaw szerokoœæ/wysokoœæ",IDC_WARSTWY_USTAWSZERWYSOKOSC,
+                    145,255,97,14
+    GROUPBOX        "Warstwy",IDC_STATIC,7,108,249,173
+    LISTBOX         IDC_LIST1,22,124,222,105,LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Podgl¹d",IDC_STATIC,263,108,190,172
+    CONTROL         132,IDC_PODGLAD_PICT,"Static",SS_BITMAP | SS_CENTERIMAGE | 
+                    SS_SUNKEN,279,126,158,127
+    GROUPBOX        "Parametry",IDC_STATIC,7,7,461,92
+    LTEXT           "Iloœæ warstw:",IDC_STATIC,43,25,68,9
+    LTEXT           "Szerokoœæ warstwy:",IDC_STATIC,43,40,68,9
+    LTEXT           "Wysokoœæ warstwy:",IDC_STATIC,43,55,68,9
+    LTEXT           "Wielkoœc celi:",IDC_STATIC,182,25,61,9
+    LTEXT           "Wartoœæ progowa:",IDC_STATIC,182,40,64,9
+    LTEXT           "Powiêkszenie:",IDC_STATIC,325,25,69,9
+    LTEXT           "Pozycja obserwatora:",IDC_STATIC,325,40,72,9
+    LTEXT           "Plik:",IDC_STATIC,43,77,17,8
+    LTEXT           "",IDC_STATIC8,66,77,359,11,SS_SUNKEN
+    EDITTEXT        IDC_STATIC2,119,39,43,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_STATIC3,119,54,43,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_STATIC4,250,23,43,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_STATIC5,250,38,43,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_STATIC6,404,23,43,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_STATIC7,404,38,43,12,ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_STATIC1,120,25,42,10,SS_SUNKEN
+    LTEXT           "Szerokoœæ:",IDC_STATIC,284,262,39,10
+    LTEXT           "",IDC_PODGLAD_SZEROKOSC,324,261,32,11,SS_SUNKEN
+    LTEXT           "Wysokoœæ:",IDC_STATIC,360,262,39,10
+    LTEXT           "",IDC_PODGLAD_WYSOKOSC,400,261,32,11,SS_SUNKEN
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_WCZYTYWANIE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 325
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 144
+    END
+
+    IDD_USTAWIENIAKOLOROW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 255
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 307
+    END
+
+    IDD_I3D, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 468
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 323
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BITMAP1             BITMAP  DISCARDABLE     "bitmap1.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_CURSOR1             CURSOR  DISCARDABLE     "cursor1.cur"
+IDC_CURSOR2             CURSOR  DISCARDABLE     "cursor2.cur"
+IDC_CURSOR3             CURSOR  DISCARDABLE     "cursor3.cur"
+IDC_CURSOR4             CURSOR  DISCARDABLE     "cursor4.cur"
+#endif    // Polish resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  22, 17, 230, 109
+STYLE DS_MODALFRAME | DS_CENTER | WS_CAPTION | WS_SYSMENU
+CAPTION "O programie..."
+FONT 8, "System"
+BEGIN
+    LTEXT           "Marching Cubes wersja 1.0",IDC_STATIC,49,15,119,8,
+                    SS_NOPREFIX
+    LTEXT           "Copyright (C) 2007",IDC_STATIC,49,31,119,8
+    DEFPUSHBUTTON   "OK",IDOK,202,8,22,11,WS_GROUP
+    LTEXT           "Cezary Nalborski (cnalborski@wit.edu.pl)",IDC_STATIC,49,
+                    41,137,8
+    LTEXT           "WSISiZ",IDC_STATIC,49,51,119,8
+    GROUPBOX        "",IDC_STATIC,9,4,186,64
+    ICON            IDI_MCB,IDC_STATIC,16,17,20,20,SS_SUNKEN
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""windows.h""\r\n"
+    "#undef APSTUDIO_HIDDEN_SYMBOLS\r\n"
+    "#include ""resource.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 68
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_MCB                 ICON    DISCARDABLE     "mcb.ICO"
+IDI_SMALL               ICON    DISCARDABLE     "SMALL.ICO"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDC_MCB MENU DISCARDABLE 
+BEGIN
+    POPUP "&Plik"
+    BEGIN
+        MENUITEM "Nowy",                        ID_PLIK_NOWY
+        MENUITEM "Otwórz",                      ID_PLIK_OTWRZ
+        MENUITEM "Zapisz jako...",              ID_PLIK_ZAPISZJAKO
+        MENUITEM "Edytuj",                      ID_PLIK_EDYTUJ
+        MENUITEM "&WyjdŸ",                      IDM_EXIT
+    END
+    POPUP "Obraz"
+    BEGIN
+        MENUITEM "Zapisz jako bitmapê",         ID_ZAPISZOBRAZ
+        MENUITEM "Zapisz jako 3d",              ID_ZAPISZ3DSTUDIO
+        MENUITEM "Ustawienia kolorów",          ID_USTAWIENIAKOLOROW
+    END
+    POPUP "P&omoc"
+    BEGIN
+        MENUITEM "O pro&gramie...",             IDM_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDC_MCB ACCELERATORS MOVEABLE PURE 
+BEGIN
+    "?",            IDM_ABOUT,              ASCII,  ALT
+    "/",            IDM_ABOUT,              ASCII,  ALT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_APP_TITLE           "Marching Cubes"
+    IDS_HELLO               "Hello World!"
+    IDC_MCB                 "MCB"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

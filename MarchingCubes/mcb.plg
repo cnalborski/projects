@@ -1,0 +1,85 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: mcb - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\czarek\USTAWI~1\Temp\RSP27C.tmp" with contents
+[
+/nologo /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Fp"Debug/mcb.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"C:\Projekty\C\mcb\mcb.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\czarek\USTAWI~1\Temp\RSP27C.tmp" 
+Creating temporary file "C:\DOCUME~1\czarek\USTAWI~1\Temp\RSP27D.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/mcb.pdb" /debug /machine:I386 /out:"Debug/mcb.exe" /pdbtype:sept 
+.\Debug\mcb.obj
+.\Debug\StdAfx.obj
+.\Debug\mcb.res
+]
+Creating command line "link.exe @C:\DOCUME~1\czarek\USTAWI~1\Temp\RSP27D.tmp"
+<h3>Output Window</h3>
+Compiling...
+mcb.cpp
+C:\Projekty\C\mcb\mcb.cpp(616) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(620) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(624) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(628) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(804) : warning C4101: 'numColours' : unreferenced local variable
+C:\Projekty\C\mcb\mcb.cpp(1356) : warning C4552: '>=' : operator has no effect; expected operator with side-effect
+C:\Projekty\C\mcb\mcb.cpp(1605) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(1607) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(1786) : warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(1787) : warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(1788) : warning C4244: 'initializing' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2002) : warning C4552: '>=' : operator has no effect; expected operator with side-effect
+C:\Projekty\C\mcb\mcb.cpp(2038) : warning C4552: '>=' : operator has no effect; expected operator with side-effect
+C:\Projekty\C\mcb\mcb.cpp(2091) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2093) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2096) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2098) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2215) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2217) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2218) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2219) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2269) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2309) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2310) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2312) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2313) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2355) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2356) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2357) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2360) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2361) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2363) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2364) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2365) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2386) : warning C4244: '=' : conversion from 'float' to 'long', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2387) : warning C4244: '=' : conversion from 'float' to 'long', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2432) : warning C4244: '=' : conversion from 'double' to 'int', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2401) : warning C4101: 'l1' : unreferenced local variable
+C:\Projekty\C\mcb\mcb.cpp(2401) : warning C4101: 'l2' : unreferenced local variable
+C:\Projekty\C\mcb\mcb.cpp(2401) : warning C4101: 'l3' : unreferenced local variable
+C:\Projekty\C\mcb\mcb.cpp(2572) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2716) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2720) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2722) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2724) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2623) : warning C4101: 'tmp' : unreferenced local variable
+C:\Projekty\C\mcb\mcb.cpp(2621) : warning C4101: 'f' : unreferenced local variable
+C:\Projekty\C\mcb\mcb.cpp(2838) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2840) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2842) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+C:\Projekty\C\mcb\mcb.cpp(2844) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+Linking...
+
+
+
+<h3>Results</h3>
+mcb.exe - 0 error(s), 51 warning(s)
+</pre>
+</body>
+</html>
