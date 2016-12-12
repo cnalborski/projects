@@ -1,0 +1,13 @@
+int read3ds(char* plik,Scena_t& Scena);
+void PR_CalcNormal();
+S32 PR_FindChunk(U16 ID);
+void PR_ReadMatName();
+void PR_ReadMatType();
+void PR_ReadMatFile();
+void PR_ObjBlock();
+void PR_ReadVert();
+void PR_ReadFace();
+void PR_ReadFaceMat();
+void PR_ReadMapUV();
+void PR_ReadMatrix();
+void PR_CopyASCII(char *Dst);

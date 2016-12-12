@@ -1,0 +1,3 @@
+c:\morph\gfx\raw\tmap1.raw 64
+c:\morph\gfx\raw\tmap2.raw 64
+c:\morph\gfx\raw\tmap3.raw 128

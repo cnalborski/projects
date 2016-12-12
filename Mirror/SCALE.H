@@ -1,0 +1,1 @@
+#define scale 256.0

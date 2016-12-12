@@ -1,0 +1,146 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Polish resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_PLK)
+#ifdef _WIN32
+LANGUAGE LANG_POLISH, SUBLANG_DEFAULT
+#pragma code_page(1250)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENU1 MENU DISCARDABLE 
+BEGIN
+    POPUP "Plik"
+    BEGIN
+        MENUITEM "Otwórz",                      ID_OTWORZ
+        MENUITEM "Informacja",                  ID_INFO
+        MENUITEM SEPARATOR
+        MENUITEM "Parametry",                   ID_PARAMETRY
+        MENUITEM SEPARATOR
+        MENUITEM "Koniec",                      ID_KONIEC
+    END
+    POPUP "Grafika"
+    BEGIN
+        MENUITEM "Druciana",                    ID_DRUT, CHECKED
+        MENUITEM "Wype³niana - p³aska",         ID_WYPEL_FLAT
+        MENUITEM "Wype³niana - Phong",          ID_WYPEL_PHONG
+        MENUITEM SEPARATOR
+        MENUITEM "Ustawienia",                  ID_USTAWIENIA
+    END
+    POPUP "Inne"
+    BEGIN
+        MENUITEM "O autorze..",                 ID_INFORMACJE
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICON1               ICON    DISCARDABLE     "icon1.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOG1 DIALOG DISCARDABLE  8, 8, 192, 151
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Parametry"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,45,126,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,99,126,50,14
+    LTEXT           "Pozycja obserwatora",IDC_STATIC,17,21,70,10
+    EDITTEXT        IDC_EDIT1,99,18,57,13
+    GROUPBOX        "",IDC_STATIC,5,2,182,144
+    LTEXT           "Zoom",IDC_STATIC,17,38,48,9
+    EDITTEXT        IDC_EDIT2,99,35,57,13,ES_AUTOHSCROLL
+    CTEXT           "X",IDC_STATIC,70,67,10,10,SS_SUNKEN
+    EDITTEXT        IDC_EDIT3,87,66,39,13,ES_AUTOHSCROLL | WS_DISABLED
+    GROUPBOX        "Translacja",IDC_STATIC,15,52,162,68
+    CTEXT           "Y",IDC_STATIC,70,83,10,10,SS_SUNKEN
+    EDITTEXT        IDC_EDIT4,87,82,39,13,ES_AUTOHSCROLL | WS_DISABLED
+    CTEXT           "Z",IDC_STATIC,70,99,10,10,SS_SUNKEN
+    EDITTEXT        IDC_EDIT5,87,97,39,13,ES_AUTOHSCROLL | WS_DISABLED
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DIALOG1, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 89
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Polish resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

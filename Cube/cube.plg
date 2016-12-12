@@ -1,0 +1,48 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: cube - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\DOCUME~1\czarek\USTAWI~1\Temp\RSP187.tmp" with contents
+[
+/nologo /Zp1 /MLd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /Fo"Debug/" /Fd"Debug/" /FD /c 
+"C:\Projekty\C\cube_test\read3ds.cpp"
+]
+Creating command line "cl.exe @C:\DOCUME~1\czarek\USTAWI~1\Temp\RSP187.tmp" 
+Creating temporary file "C:\DOCUME~1\czarek\USTAWI~1\Temp\RSP188.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /incremental:yes /pdb:"Debug/cube.pdb" /debug /machine:I386 /out:"Debug/cube.exe" /pdbtype:sept 
+.\Debug\krzywa.obj
+.\Debug\main.obj
+.\Debug\proc3d.obj
+.\Debug\read3ds.obj
+.\Debug\zasoby.res
+]
+Creating command line "link.exe @C:\DOCUME~1\czarek\USTAWI~1\Temp\RSP188.tmp"
+<h3>Output Window</h3>
+Compiling...
+read3ds.cpp
+c:\projekty\c\cube_test\read3ds.cpp(241) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+c:\projekty\c\cube_test\read3ds.cpp(243) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+c:\projekty\c\cube_test\read3ds.cpp(244) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+c:\projekty\c\cube_test\read3ds.cpp(245) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+c:\projekty\c\cube_test\read3ds.cpp(354) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+c:\projekty\c\cube_test\read3ds.cpp(355) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+c:\projekty\c\cube_test\read3ds.cpp(356) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+c:\projekty\c\cube_test\read3ds.cpp(418) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+c:\projekty\c\cube_test\read3ds.cpp(419) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+c:\projekty\c\cube_test\read3ds.cpp(420) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+c:\projekty\c\cube_test\read3ds.cpp(495) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+c:\projekty\c\cube_test\read3ds.cpp(496) : warning C4244: '=' : conversion from 'double' to 'float', possible loss of data
+Linking...
+
+
+
+<h3>Results</h3>
+cube.exe - 0 error(s), 12 warning(s)
+</pre>
+</body>
+</html>

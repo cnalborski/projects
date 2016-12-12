@@ -1,0 +1,3566 @@
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+;
+; VIRTUAL REALITY ENGINE
+; PROGRAMMING BY MORPH/PULP
+;
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+maxpoly = 4096
+
+mode    = 10eh
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+
+        .386p
+        .model flat,c
+
+        .code
+
+;²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²
+; SYMBOLS
+;²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²
+
+ public virt_init
+ public calc_virt
+ public virt_finish
+
+;²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²
+; INCLUDE
+;²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²
+
+        include main.inc
+        include gfx.inc
+        include load.inc
+
+;²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²
+; DATA
+;²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²
+
+ENG_msg0        db 13,10,"  error initalising engine !",13,10,"    $"
+ENG_msg1        db "- VESA not found",7,"$"
+ENG_msg2        db "- Can't use 320x200x16bpp mode",7,"$"
+ENG_msg3        db "- File error",7,"$"
+ENG_msg4        db "- Not enough memory",7,"$"
+ENG_msg5        db "- Can't allocate a selector",7,"$"
+
+WLD_File        db "test.wld",0
+TRS_File        db "test.trs",0
+CAM_File        db "test.cam",0
+Lpom_File       db "test.lnu",0
+Light_File      db "test.lig",0
+Flare_File      db "flare.raw",0
+
+ZBUF_Addr       dd 0
+MIR_Addr        dd 0
+MIR_sel         dw 0
+
+YTAB_Addr       dd 0
+BUF_Addr        dd 0
+
+TRS_Addr        dd 0
+TXR_Addr        dd 0
+SCR_Addr        dd 0
+DST_Addr        dd 0
+LDST_Addr       dd 0
+CAM_Addr        dd 0
+NTR_Addr        dd 0
+PXY_Addr        dd 0
+FTAB_Addr       dd 0
+SORT_Addr       dd 0
+Light_Addr      dd 0
+Flare_Addr      dd 0
+
+WLD_Hand        dd 0
+TRS_Hand        dd 0
+CAM_Hand        dd 0
+TXR_Hand        dd 0
+SCR_Hand        dd 0
+DST_Hand        dd 0
+NTR_Hand        dd 0
+PXY_Hand        dd 0
+FTAB_Hand       dd 0
+SORT_Hand       dd 0
+
+SCN_Mat         dd 0
+SCN_Obj         dd 0
+SCN_Vertex      dd 0
+SCN_Face        dd 0
+SCN_Frames      dd 0
+
+MapFile_Addr    dd 0
+ObjDef_Addr     dd 0
+Vertex_Addr     dd 0
+Normal_Addr     dd 0
+MapUV_Addr      dd 0
+Face_Addr       dd 0
+
+lcount          dd 0
+
+TRANSFORM_Addr  dd 0
+CAMERA_Addr     dd 0
+
+xs              dd 1
+xe              dd 319
+
+ys              dd 1
+ye              dd 199
+
+_160            dd 160.0
+_100            dd 100.0
+_128            dd 128.0
+
+ytab            label dword
+                y=0
+                rept 200
+                dd y
+                y=y+640
+                endm
+
+ytab2           label dword
+                y=0
+                rept 256
+                dd y
+                y=y+512
+                endm
+
+;²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²
+; CODE
+;²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²±²
+
+;°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
+; Entry To ASM Code
+; In:
+;   CS - Code Selector    Base: 00000000h - Limit: 4G
+;   DS - Data Selector    Base: 00000000h - Limit: 4G
+;   ES - PSP Selector     Base: PSP Seg   - Limit: 100h
+;   FS - ?
+;   GS - ?
+;   SS - Data Selector    Base: 00000000h - Limit: 4G
+;   ESP -> STACK segment
+;   Direction Flag - ?
+;   Interrupt Flag - ?
+;
+;   All Other Registers Are Undefined!
+;°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°
+
+public virt_init
+
+virt_init:
+        pushad
+        cld
+
+        push ds
+        pop es
+
+        call Init_VESA
+        jc Shit
+        call Load_WLD
+        jc Shit
+        call Load_TRS
+        jc Shit
+        call Load_Mats
+        jc Shit
+        call Init_Rest
+        jc Shit
+
+        call Patch_Code
+
+        mov ax,4f02h
+        mov bx,mode
+        int 10h
+
+        popad
+        ret
+
+;ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+
+public calc_virt
+
+calc_virt:
+        pushad
+
+        call draw_mirrors
+        call Clear_ZBUF
+
+        call draw_main
+        call Clear_ZBUF
+
+        call v_Sync
+        call Scr_Copy
+        call Control
+
+        popad
+        ret
+
+;ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+
+draw_mirrors:
+        mov eax,TRS_Addr
+        mov TRANSFORM_Addr,eax
+        mov eax,CAM_Addr
+        mov CAMERA_Addr,eax
+
+        mov YTAB_Addr,offs ytab2
+        mov eax,MIR_Addr
+        mov BUF_Addr,eax
+
+        mov xs,1
+        mov xe,255
+        mov ys,1
+        mov ye,255
+
+        fld _128
+        fstp px
+        fld _128
+        fstp py
+
+        call TrsByMat
+        ;call Light_TrsByMat
+        call XY_Calc
+        call Select
+        cmp tmp,0
+        je Empty
+        call Show
+Empty:  ;call Put_Flares
+        ret
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+draw_main:
+        mov eax,TRS_Addr
+        mov TRANSFORM_Addr,eax
+        mov eax,CAM_Addr
+        add eax,48
+        mov CAMERA_Addr,eax
+
+        mov YTAB_Addr,offs ytab
+        mov eax,SCR_Addr
+        mov BUF_Addr,eax
+
+        mov xs,1
+        mov xe,319
+        mov ys,1
+        mov ye,199
+
+        fld _160
+        fstp px
+        fld _100
+        fstp py
+
+        call TrsByMat
+        ;call Light_TrsByMat
+        call XY_Calc
+        call Select
+        cmp tmp,0
+        je Empty2
+        call Show
+Empty2: ;call Put_Flares
+        ret
+
+;ÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍÍ
+
+public virt_finish
+
+virt_finish:
+        pushad
+        mov ax,3
+        int 10h
+
+        call Clean_Up
+        popad
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+Shit:   lea edx,ENG_msg0
+        mov ah,9
+        int 21h
+        mov edx,ebp
+        mov ah,9
+        int 21h
+        mov ax,4c00h
+        int 21h
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+Err0:   lea ebp,ENG_msg1
+        stc
+        ret
+
+Err1:   lea ebp,ENG_msg2
+        stc
+        ret
+
+Err2:   lea ebp,ENG_msg3
+        ret
+
+Err3:   lea ebp,ENG_msg4
+        ret
+
+Err4:   lea ebp,ENG_msg5
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+info            db 256 dup (0)
+gran            dd 0
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+Init_VESA:
+        lea edi,info
+        shld eax,edi,28
+        and di,0fh
+        mov reg_es,ax
+        mov reg_di,di
+        mov reg_ax,4f00h
+        dos_int 10h
+        cmp dptr info,"ASEV"
+        jne Err0
+        lea edi,info
+        shld eax,edi,28
+        and di,0fh
+        mov reg_es,ax
+        mov reg_di,di
+        mov reg_cx,mode
+        mov reg_ax,4f01h
+        dos_int 10h
+        cmp reg_ax,4fh
+        jne Err1
+        movzx eax,bptr info+4
+        shl eax,10
+        mov gran,eax
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+Load_WLD:
+        lea edx,WLD_File
+        call Load_File
+        jc Err2
+        mov edi,edx
+        mov WLD_Hand,esi
+
+        mov eax,[edi]
+        mov SCN_Mat,eax
+        mov eax,[edi+4]
+        mov SCN_Obj,eax
+        mov eax,[edi+8]
+        mov SCN_Vertex,eax
+        mov eax,[edi+12]
+        mov SCN_Face,eax
+        add edi,16
+        mov MapFile_Addr,edi
+
+        xor eax,eax
+        mov edx,SCN_Mat
+Skip_Mat:
+        mov ecx,-1
+        repne scasb
+        dec edx
+        jnz Skip_Mat
+        mov ObjDef_Addr,edi
+
+        mov eax,SCN_Obj
+        shl eax,4
+        add edi,eax
+        mov Vertex_Addr,edi
+
+        mov eax,SCN_Vertex
+        lea eax,[eax*2+eax]
+        shl eax,2
+        add edi,eax
+        mov Normal_Addr,edi
+
+        add edi,eax
+        mov MapUV_Addr,edi
+
+        mov eax,SCN_Vertex
+        shl eax,3
+        add edi,eax
+        mov Face_Addr,edi
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+Load_TRS:
+        lea edx,TRS_File
+        call Load_File
+        jc Err2
+        mov eax,[edx]
+        add edx,4
+        mov TRS_Addr,edx
+        mov TRS_Hand,esi
+
+        mov SCN_Frames,eax
+
+        lea edx,CAM_File
+        call Load_File
+        jc Err2
+        mov CAM_Addr,edx
+        mov CAM_Hand,esi
+
+        lea edx,Lpom_File
+        call Load_File
+        jc Err2
+        mov eax,[edx]
+        mov lcount,eax
+
+        mov ecx,eax
+        lea ecx,[ecx*2+ecx]
+        shl ecx,2
+        call get_mem
+        jc Err3
+        mov LDST_Addr,ebx
+
+        lea edx,Light_File
+        call Load_File
+        jc Err2
+        mov Light_Addr,edx
+
+        lea edx,Flare_File
+        call Load_File
+        jc Err2
+        mov Flare_Addr,edx
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+Load_Mats:
+        mov ecx,SCN_Mat
+        lea ecx,[ecx*2+ecx]
+        add ecx,ecx
+        call get_mem
+        jc Err3
+        mov TXR_Addr,ebx
+        mov TXR_Hand,esi
+
+        mov help,ebx
+        mov eax,SCN_Mat
+        mov tmp,eax
+Mat_Lo: mov edx,MapFile_Addr
+        call Load_File
+        jc Err2
+        mov help+4,esi
+        mov ebp,1ffffh
+        call get_sel
+        jc Err4
+        mov edi,help
+        mov [edi],si
+        mov eax,help+4
+        mov [edi+2],eax
+        mov edi,MapFile_Addr
+        xor eax,eax
+        mov ecx,-1
+        repne scasb
+        mov MapFile_Addr,edi
+        add help,6
+        dec tmp
+        jnz Mat_Lo
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+_16             dd 20.0
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+Init_Rest:
+        mov ecx,128000
+        call get_mem
+        jc Err3
+        mov SCR_Addr,ebx
+        mov SCR_Hand,esi
+
+        mov edi,ebx
+        xor eax,eax
+        mov ecx,32000
+        rep stosd
+
+        mov ecx,320*200*4
+        call get_mem
+        mov ZBUF_Addr,ebx
+        mov edi,ebx
+        xor eax,eax
+        mov ecx,32000
+        rep stosd
+
+        mov ecx,256*256*4
+        call get_mem
+        mov MIR_Addr,ebx
+        mov edx,ebx
+        mov ebp,256*256*2
+        call get_sel
+        mov MIR_sel,si
+
+        mov ecx,SCN_Vertex
+        lea ecx,[ecx*2+ecx]
+        shl ecx,2
+        call get_mem
+        jc Err3
+        mov DST_Addr,ebx
+        mov DST_Hand,esi
+
+        mov ecx,SCN_Vertex
+        shl ecx,3
+        call get_mem
+        jc Err3
+        mov NTR_Addr,ebx
+        mov NTR_Hand,esi
+
+        mov ecx,SCN_Vertex
+        shl ecx,3
+        call get_mem
+        jc Err3
+        mov PXY_Addr,ebx
+        mov PXY_Hand,esi
+
+        mov ecx,SCN_Face
+        shl ecx,3
+        call get_mem
+        jc Err3
+        mov FTAB_Addr,ebx
+        mov FTAB_Hand,esi
+
+        mov ecx,maxpoly*16*8
+        call get_mem
+        jc Err3
+        mov SORT_Addr,ebx
+        mov SORT_Hand,esi
+
+        lea esi,ytab
+        mov eax,SCR_Addr
+        mov ecx,200
+my_lo1: add [esi],eax
+        add esi,4
+        dec ecx
+        jnz my_lo1
+
+        lea esi,ytab2
+        mov eax,MIR_Addr
+        mov ecx,256
+my_lo2: add [esi],eax
+        add esi,4
+        dec ecx
+        jnz my_lo2
+
+        fld zm
+        fsub _16
+        fstp zm+4
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+Clean_Up:
+        mov edi,WLD_Hand
+        call free_mem
+        mov edi,TRS_Hand
+        call free_mem
+        mov edi,CAM_Hand
+        call free_mem
+
+CL_Lop: mov esi,TXR_Addr
+        mov edi,[esi+2]
+        call free_mem
+        add TXR_Addr,6
+        dec SCN_Mat
+        jnz CL_Lop
+
+        mov edi,TXR_Hand
+        call free_mem
+        mov edi,SCR_Hand
+        call free_mem
+        mov edi,DST_Hand
+        call free_mem
+        mov edi,NTR_Hand
+        call free_mem
+        mov edi,PXY_Hand
+        call free_mem
+        mov edi,FTAB_Hand
+        call free_mem
+        mov edi,SORT_Hand
+        call free_mem
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+Scr_Copy:
+        mov esi,SCR_Addr
+        mov ebp,128000
+        xor edx,edx
+move:   xor ebx,ebx
+        mov ax,4f05h
+        int 10h
+        mov edi,0a0000h
+        mov ecx,gran
+        shr ecx,2
+        rep movsd
+        inc edx
+        sub ebp,gran
+        jg move
+
+        mov edi,SCR_Addr
+        xor eax,eax
+        mov ecx,32000
+        rep stosd
+
+        mov edi,MIR_Addr
+        xor eax,eax
+        mov ecx,(256*256)/2
+        rep stosd
+        ret
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+Clear_ZBUF:
+        mov edi,ZBUF_Addr
+        mov eax,8020*256  ;farthest zet coord.
+        mov ecx,320*200
+        rep stosd
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+
+_MUL macro what
+     fmul dptr [ebx+what]
+     endm
+
+_ADD macro what
+     fadd dptr [ebx+what]
+     endm
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+na              dd 128.0
+np              dd 256.0
+
+_neg            dd -1.0
+
+TR_Addr         dd 0
+CA_Addr         dd 0
+
+xx              dd 0.0
+yy              dd 0.0
+zz              dd 0.0
+
+TrsByMat:
+        mov esi,Vertex_Addr
+        mov edi,DST_Addr
+
+        mov eax,Frame
+        imul eax,48
+        imul eax,SCN_Obj
+        add eax,TRANSFORM_Addr
+        mov TR_Addr,eax
+
+        mov eax,Frame
+        imul eax,48*2
+        add eax,CAMERA_Addr
+        mov CA_Addr,eax
+
+        mov eax,Normal_Addr
+        mov ecx,NTR_Addr
+
+        mov ebp,ObjDef_Addr
+
+        mov edx,SCN_Obj
+        mov help,edx
+
+tr0p:   mov edx,[ebp]
+
+tr1p:   mov ebx,TR_Addr
+
+        fld dptr [esi]
+        _MUL 0
+        fld dptr [esi+4]
+        _MUL 4
+        fld dptr [esi+8]
+        _MUL 8
+        faddp st(1),st
+        faddp st(1),st
+        _ADD 36
+        fstp xx
+
+        fld dptr [esi]
+        _MUL 12
+        fld dptr [esi+4]
+        _MUL 16
+        fld dptr [esi+8]
+        _MUL 20
+        faddp st(1),st
+        faddp st(1),st
+        _ADD 40
+        fstp yy
+
+        fld dptr [esi]
+        _MUL 24
+        fld dptr [esi+4]
+        _MUL 28
+        fld dptr [esi+8]
+        _MUL 32
+        faddp st(1),st
+        faddp st(1),st
+        _ADD 44
+        fstp zz
+
+        mov ebx,CA_Addr
+
+        fld xx
+        _ADD 36
+        fstp xx
+
+        fld yy
+        _ADD 40
+        fstp yy
+
+        fld zz
+        _ADD 44
+        fstp zz
+
+        fld xx
+        _MUL 0
+        fld yy
+        _MUL 4
+        fld zz
+        _MUL 8
+        faddp st(1),st
+        faddp st(1),st
+        fstp dptr [edi]
+
+        fld xx
+        _MUL 12
+        fld yy
+        _MUL 16
+        fld zz
+        _MUL 20
+        faddp st(1),st
+        faddp st(1),st
+        fmul _neg
+        fstp dptr [edi+4]
+
+        fld xx
+        _MUL 24
+        fld yy
+        _MUL 28
+        fld zz
+        _MUL 32
+        faddp st(1),st
+        faddp st(1),st
+        fstp dptr [edi+8]
+
+        add esi,12
+        add edi,12
+        dec edx
+        jnz tr1p
+
+        mov edx,[ebp]
+        cmp dptr [ebp+8],2
+        je tr2p
+        shl edx,2
+        lea ecx,[ecx+edx*2]
+        lea edx,[edx*2+edx]
+        add eax,edx
+        jmp tr3p
+
+tr2p:   mov ebx,TR_Addr
+
+        fld dptr [eax]
+        _MUL 0
+        fld dptr [eax+4]
+        _MUL 4
+        fld dptr [eax+8]
+        _MUL 8
+        faddp st(1),st
+        faddp st(1),st
+        fstp xx
+
+        fld dptr [eax]
+        _MUL 12
+        fld dptr [eax+4]
+        _MUL 16
+        fld dptr [eax+8]
+        _MUL 20
+        faddp st(1),st
+        faddp st(1),st
+        fstp yy
+
+        fld dptr [eax]
+        _MUL 24
+        fld dptr [eax+4]
+        _MUL 28
+        fld dptr [eax+8]
+        _MUL 32
+        faddp st(1),st
+        faddp st(1),st
+        fstp zz
+
+        mov ebx,CA_Addr
+
+        fld xx
+        _MUL 0
+        fld yy
+        _MUL 4
+        fld zz
+        _MUL 8
+        faddp st(1),st
+        faddp st(1),st
+        fadd na
+        fmul np
+        fstp dptr [ecx]
+
+        fld xx
+        _MUL 12
+        fld yy
+        _MUL 16
+        fld zz
+        _MUL 20
+        faddp st(1),st
+        faddp st(1),st
+        fadd na
+        fmul np
+        fstp dptr [ecx+4]
+
+        add eax,12
+        add ecx,8
+        dec edx
+        jnz tr2p
+
+tr3p:   add TR_Addr,48
+        add ebp,16
+        dec help
+        jnz tr0p
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+Light_TrsByMat:
+        mov esi,Frame
+        imul esi,24
+        imul esi,lcount
+        add esi,Light_Addr
+
+        mov edi,LDST_Addr
+
+        mov ebx,Frame
+        imul ebx,48*2
+        add ebx,CAMERA_Addr
+
+        mov edx,lcount
+
+ltrans: fld dptr [esi]
+        _ADD 36
+        fstp xx
+
+        fld dptr [esi+4]
+        _ADD 40
+        fstp yy
+
+        fld dptr [esi+8]
+        _ADD 44
+        fstp zz
+
+        fld xx
+        _MUL 0
+        fld yy
+        _MUL 4
+        fld zz
+        _MUL 8
+        faddp st(1),st
+        faddp st(1),st
+        fstp dptr [edi]
+
+        fld xx
+        _MUL 12
+        fld yy
+        _MUL 16
+        fld zz
+        _MUL 20
+        faddp st(1),st
+        faddp st(1),st
+        fmul _neg
+        fstp dptr [edi+4]
+
+        fld xx
+        _MUL 24
+        fld yy
+        _MUL 28
+        fld zz
+        _MUL 32
+        faddp st(1),st
+        faddp st(1),st
+        fstp dptr [edi+8]
+
+        add esi,24
+        add edi,12
+        dec edx
+        jnz ltrans
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+tmp             dd 0,0,0
+
+_0              dd 0.0
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+Select: mov tmp,0
+        mov tmp+4,0
+
+        mov esi,Face_Addr
+        mov edi,FTAB_Addr
+        mov ebp,DST_Addr
+        mov eax,ObjDef_Addr
+        mov tmp+8,eax
+        mov eax,SCN_Obj
+        mov help,eax
+
+se_lo1: mov ebx,tmp+8
+        mov eax,[ebx+4]
+        mov help+4,eax
+
+se_lo2: mov edx,[esi]
+        mov ebx,[esi+4]
+        mov ecx,[esi+8]
+
+SE_patch0:
+        fld dptr 11111111h[ecx*2+ecx]   ;z1
+SE_patch1:
+        fmul dptr 11111111h[ebx*2+ebx]  ;y2
+SE_patch2:
+        fld dptr 11111111h[ecx*2+ecx]   ;y1
+SE_patch3:
+        fmul dptr 11111111h[ebx*2+ebx]  ;z2
+        fsubp st(1),st
+SE_patch4:
+        fmul dptr 11111111h[edx*2+edx]  ;x3
+SE_patch5:
+        fld dptr 11111111h[ecx*2+ecx]   ;x1
+SE_patch6:
+        fmul dptr 11111111h[ebx*2+ebx]  ;z2
+SE_patch7:
+        fld dptr 11111111h[ecx*2+ecx]   ;z1
+SE_patch8:
+        fmul dptr 11111111h[ebx*2+ebx]  ;x2
+        fsubp st(1),st
+SE_patch9:
+        fmul dptr 11111111h[edx*2+edx]  ;y3
+SE_patch10:
+        fld dptr 11111111h[ecx*2+ecx]   ;y1
+SE_patch11:
+        fmul dptr 11111111h[ebx*2+ebx]  ;x2
+SE_patch12:
+        fld dptr 11111111h[ecx*2+ecx]   ;x1
+SE_patch13:
+        fmul dptr 11111111h[ebx*2+ebx]  ;y2
+        fsubp st(1),st
+SE_patch14:
+        fmul dptr 11111111h[edx*2+edx]  ;z3
+        faddp st(1),st
+        faddp st(1),st
+        fcomp _0
+        fstsw ax
+        wait
+        sahf
+        ja Hide
+
+TRS_patch0:
+        fld dptr 11111111h[edx*2+edx]
+        fistp po
+        mov eax,po
+
+TRS_patch1:
+        fld dptr 11111111h[ebx*2+ebx]
+        fistp po
+        cmp po,eax
+        jle TRS_patch2
+        mov eax,po
+
+TRS_patch2:
+        fld dptr 11111111h[ecx*2+ecx]
+        fistp po
+        cmp po,eax
+        jle se1p
+        mov eax,po
+
+se1p:   stosd
+        mov eax,tmp+4
+        stosd
+
+        inc tmp
+
+Hide:   add esi,16
+        add tmp+4,10000h
+        dec help+4
+        jnz se_lo2
+
+        add tmp+4,10h
+        add tmp+8,16
+        dec help
+        jnz se_lo1
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+XY_Calc:
+        mov esi,DST_Addr
+        mov edi,PXY_Addr
+        mov ecx,SCN_Vertex
+
+XY_Lop: fld dptr [esi+8]
+        fistp help
+XY_patch0:
+        cmp help,11111111h
+        jl XY_No
+
+        fld1
+        fdiv dptr [esi+8]
+        fld dptr [esi]
+        fmul zm
+        fmul st,st(1)
+        fadd px
+        fistp dptr [edi]
+        fld dptr [esi+4]
+        fmul zm+4
+        fmulp st(1),st
+        fadd py
+        fistp dptr [edi+4]
+
+XY_No:  add esi,12
+        add edi,8
+        dec ecx
+        jnz XY_Lop
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+prg_tab         dd offs MIR_Prog
+                dd offs NT_Prog
+                dd offs PSH_Prog
+                dd offs PCM_Prog
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+PCM_Prog:
+        lea edx,[edx*2+edx]
+        add edx,edx
+TXR_patch0:
+        mov fs,11111111h[edx]
+        movzx esi,wptr [esi+ecx*8-2]
+        shl esi,4
+        add esi,Face_Addr
+        call PCM_Clip
+        cmp edges,0
+        je PCM_No
+        call PCM_Draw
+PCM_No: ret
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+PSH_Prog:
+        mov ebp,NTR_Addr
+        jmp PSH_Skip
+NT_Prog:
+        mov ebp,MapUV_Addr
+PSH_Skip:
+        lea edx,[edx*2+edx]
+        add edx,edx
+TXR_patch1:
+        mov fs,11111111h[edx]
+        movzx esi,wptr [esi+ecx*8-2]
+        shl esi,4
+        add esi,Face_Addr
+        call NT_Clip
+        cmp edges,0
+        je PCM_No
+        call NT_Draw
+        ret
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+NT2_Prog:
+        mov ebp,MapUV_Addr
+        lea edx,[edx*2+edx]
+        add edx,edx
+TXR_patch2:
+        mov fs,11111111h[edx]
+        movzx esi,wptr [esi+ecx*8-2]
+        shl esi,4
+        add esi,Face_Addr
+        call NT_Clip
+        cmp edges,0
+        je PCM_No
+        call NT2_Draw
+        ret
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+MIR_Prog:
+        lea edx,[edx*2+edx]
+        add edx,edx
+        mov fs,MIR_sel
+        movzx esi,wptr [esi+ecx*8-2]
+        shl esi,4
+        add esi,Face_Addr
+        call PCM_Clip
+        cmp edges,0
+        je PCM_No
+        call PCM_Draw
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+Show:   push fs
+        mov esi,FTAB_Addr
+        mov ecx,tmp
+
+show_loop:
+        movzx edi,wptr [esi+ecx*8-4]
+SH_patch0:
+        mov ebx,11111111h[edi]
+SH_patch1:
+        mov edx,11111111h[edi]
+        push ecx esi
+        call prg_tab[ebx*4]
+        pop esi ecx
+        dec ecx
+        jnz show_loop
+
+        pop fs
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+;
+;*** Perspective Corrected Mapping
+;
+
+poly            dd 10*6 dup (0)
+
+edges           dd 0
+
+c1p             dd 0
+c2p             dd 0
+c3p             dd 0
+
+zc              dd 8.0
+zm              dd 240.0,0
+px              dd 160.0
+py              dd 100.0
+
+x1              dd 0
+y1              dd 0
+z1              dd 0
+u1              dd 0
+v1              dd 0
+x2              dd 0
+y2              dd 0
+z2              dd 0
+u2              dd 0
+v2              dd 0
+
+a0              dd 0
+a1              dd 0
+a2              dd 0
+a2a             dd 0
+a3              dd 0
+a4              dd 0
+a5              dd 0
+a6              dd 0
+a6a             dd 0
+a7              dd 0
+a8              dd 0
+a9              dd 0
+
+b0              dd 0
+b1              dd 0
+b2              dd 0
+b2b             dd 0
+b3              dd 0
+b4              dd 0
+b5              dd 0
+b6              dd 0
+b6b             dd 0
+b7              dd 0
+b8              dd 0
+b9              dd 0
+
+c0              dd 0
+c1              dd 0
+c2              dd 0
+c2c             dd 0
+c3              dd 0
+c4              dd 0
+c5              dd 0
+c6              dd 0
+c6c             dd 0
+c7              dd 0
+c8              dd 0
+c9              dd 0
+
+q1              dd 0
+q2              dd 0
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+PCM_Clip:
+        lea edi,poly
+        mov edges,0
+        mov c1p,0
+        mov c2p,0
+        mov c3p,0
+        mov ecx,3
+
+my0p:   mov ebx,[esi]
+        mov edx,[esi+4]
+
+PCM_patch0:
+        mov eax,11111111h[ebx*2+ebx]
+        mov x1,eax
+PCM_patch1:
+        mov eax,11111111h[ebx*2+ebx]
+        mov y1,eax
+PCM_patch2:
+        fld dptr 11111111h[ebx*2+ebx]
+        fist q1
+        fstp z1
+PCM_patch3:
+        mov eax,11111111h[ebx*2]
+        mov u1,eax
+PCM_patch4:
+        mov eax,11111111h[ebx*2]
+        mov v1,eax
+
+PCM_patch5:
+        mov eax,11111111h[edx*2+edx]
+        mov x2,eax
+PCM_patch6:
+        mov eax,11111111h[edx*2+edx]
+        mov y2,eax
+PCM_patch7:
+        fld dptr 11111111h[edx*2+edx]
+        fist q2
+        fstp z2
+PCM_patch8:
+        mov eax,11111111h[edx*2]
+        mov u2,eax
+PCM_patch9:
+        mov eax,11111111h[edx*2]
+        mov v2,eax
+
+ZC_patch0:
+        cmp q1,11111111h
+        jge ZC_patch2
+ZC_patch1:
+        cmp q2,11111111h
+        jl ne0p
+        inc c1p
+        fld zc
+        fsub z1
+        fld z2
+        fsub z1
+        fdivp st(1),st
+        fld1
+        fdiv zc
+        fst a7
+        fstp z1
+        fld x2
+        fsub x1
+        fmul st,st(1)
+        fadd x1
+        fmul zm
+        fmul z1
+        fadd px
+        fist a5
+        fistp x1
+        fld y2
+        fsub y1
+        fmul st,st(1)
+        fadd y1
+        fmul zm+4
+        fmul z1
+        fadd py
+        fist a6
+        fistp y1
+        fld u2
+        fsub u1
+        fmul st,st(1)
+        fadd u1
+        fmul z1
+        fst a8
+        fstp u1
+        fld v2
+        fsub v1
+        fmulp st(1),st
+        fadd v1
+        fmul z1
+        fst a9
+        fstp v1
+
+PCM_patch10:
+        mov eax,11111111h[edx*2]
+        mov x2,eax
+PCM_patch11:
+        mov eax,11111111h[edx*2]
+        mov y2,eax
+
+        fld1
+        fdiv z2
+        fld u2
+        fmul st,st(1)
+        fstp u2
+        fld v2
+        fmul st,st(1)
+        fstp v2
+        fstp z2
+        jmp go0p
+
+ZC_patch2:
+        cmp q2,11111111h
+        jge PCM_patch14
+        inc c1p
+
+        fld zc
+        fsub z2
+        fld z1
+        fsub z2
+        fdivp st(1),st
+        fld1
+        fdiv zc
+        fst a2
+        fstp z2
+        fld x1
+        fsub x2
+        fmul st,st(1)
+        fadd x2
+        fmul zm
+        fmul z2
+        fadd px
+        fist a0
+        fistp x2
+        fld y1
+        fsub y2
+        fmul st,st(1)
+        fadd y2
+        fmul zm+4
+        fmul z2
+        fadd py
+        fist a1
+        fistp y2
+        fld u1
+        fsub u2
+        fmul st,st(1)
+        fadd u2
+        fmul z2
+        fst a3
+        fstp u2
+        fld v1
+        fsub v2
+        fmulp st(1),st
+        fadd v2
+        fmul z2
+        fst a4
+        fstp v2
+
+PCM_patch12:
+        mov eax,11111111h[ebx*2]
+        mov x1,eax
+PCM_patch13:
+        mov eax,11111111h[ebx*2]
+        mov y1,eax
+
+        fld1
+        fdiv z1
+        fld u1
+        fmul st,st(1)
+        fstp u1
+        fld v1
+        fmul st,st(1)
+        fstp v1
+        fstp z1
+        jmp go0p
+
+PCM_patch14:
+        mov eax,11111111h[ebx*2]
+        mov x1,eax
+PCM_patch15:
+        mov eax,11111111h[ebx*2]
+        mov y1,eax
+
+        fld1
+        fdiv z1
+        fld u1
+        fmul st,st(1)
+        fstp u1
+        fld v1
+        fmul st,st(1)
+        fstp v1
+        fstp z1
+
+PCM_patch16:
+        mov eax,11111111h[edx*2]
+        mov x2,eax
+PCM_patch17:
+        mov eax,11111111h[edx*2]
+        mov y2,eax
+
+        fld1
+        fdiv z2
+        fld u2
+        fmul st,st(1)
+        fstp u2
+        fld v2
+        fmul st,st(1)
+        fstp v2
+        fstp z2
+
+go0p:   mov eax,xs
+        cmp x1,eax
+        jge co1p
+        cmp x2,eax
+        jl ne0p
+        inc c2p
+        mov eax,xs
+        sub eax,x1
+        mov po,eax
+        fild po
+        mov eax,x2
+        sub eax,x1
+        mov po,eax
+        fidiv po
+        mov eax,xs
+        mov x1,eax
+        mov b0,eax
+        fild y2
+        fisub y1
+        fmul st,st(1)
+        fiadd y1
+        fist b1
+        fistp y1
+        fld z2
+        fsub z1
+        fmul st,st(1)
+        fadd z1
+        fst b2
+        fstp z1
+        fld u2
+        fsub u1
+        fmul st,st(1)
+        fadd u1
+        fst b3
+        fstp u1
+        fld v2
+        fsub v1
+        fmulp st(1),st
+        fadd v1
+        fst b4
+        fstp v1
+
+co1p:   mov eax,xe
+        cmp x2,eax
+        jle co2p
+        cmp x1,eax
+        jg ne0p
+        inc c3p
+        mov eax,xe
+        sub eax,x1
+        mov po,eax
+        fild po
+        mov eax,x2
+        sub eax,x1
+        mov po,eax
+        fidiv po
+        mov eax,xe
+        mov x2,eax
+        mov c5,eax
+        fild y2
+        fisub y1
+        fmul st,st(1)
+        fiadd y1
+        fist c6
+        fistp y2
+        fld z2
+        fsub z1
+        fmul st,st(1)
+        fadd z1
+        fst c7
+        fstp z2
+        fld u2
+        fsub u1
+        fmul st,st(1)
+        fadd u1
+        fst c8
+        fstp u2
+        fld v2
+        fsub v1
+        fmulp st(1),st
+        fadd v1
+        fst c9
+        fstp v2
+
+co2p:   mov eax,xs
+        cmp x2,eax
+        jge co3p
+        cmp x1,eax
+        jl ne0p
+        inc c2p
+        mov eax,xs
+        sub eax,x2
+        mov po,eax
+        fild po
+        mov eax,x1
+        sub eax,x2
+        mov po,eax
+        fidiv po
+        mov eax,xs
+        mov x2,eax
+        mov b5,eax
+        fild y1
+        fisub y2
+        fmul st,st(1)
+        fiadd y2
+        fist b6
+        fistp y2
+        fld z1
+        fsub z2
+        fmul st,st(1)
+        fadd z2
+        fst b7
+        fstp z2
+        fld u1
+        fsub u2
+        fmul st,st(1)
+        fadd u2
+        fst b8
+        fstp u2
+        fld v1
+        fsub v2
+        fmulp st(1),st
+        fadd v2
+        fst b9
+        fstp v2
+
+co3p:   mov eax,xe
+        cmp x1,eax
+        jle co4p
+        cmp x2,eax
+        jg ne0p
+        inc c3p
+        mov eax,xe
+        sub eax,x2
+        mov po,eax
+        fild po
+        mov eax,x1
+        sub eax,x2
+        mov po,eax
+        fidiv po
+        mov eax,xe
+        mov x1,eax
+        mov c0,eax
+        fild y1
+        fisub y2
+        fmul st,st(1)
+        fiadd y2
+        fist c1
+        fistp y1
+        fld z1
+        fsub z2
+        fmul st,st(1)
+        fadd z2
+        fst c2
+        fstp z1
+        fld u1
+        fsub u2
+        fmul st,st(1)
+        fadd u2
+        fst c3
+        fstp u1
+        fld v1
+        fsub v2
+        fmulp st(1),st
+        fadd v2
+        fst c4
+        fstp v1
+
+co4p:   mov eax,ys
+        cmp y1,eax
+        jge co5p
+        cmp y2,eax
+        jl ne0p
+        mov eax,ys
+        sub eax,y1
+        mov po,eax
+        fild po
+        mov eax,y2
+        sub eax,y1
+        mov po,eax
+        fidiv po
+        mov eax,ys
+        mov y1,eax
+        fild x2
+        fisub x1
+        fmul st,st(1)
+        fiadd x1
+        fistp x1
+        fld z2
+        fsub z1
+        fmul st,st(1)
+        fadd z1
+        fstp z1
+        fld u2
+        fsub u1
+        fmul st,st(1)
+        fadd u1
+        fstp u1
+        fld v2
+        fsub v1
+        fmulp st(1),st
+        fadd v1
+        fstp v1
+
+co5p:   mov eax,ye
+        cmp y2,eax
+        jle co6p
+        cmp y1,eax
+        jg ne0p
+        mov eax,ye
+        sub eax,y1
+        mov po,eax
+        fild po
+        mov eax,y2
+        sub eax,y1
+        mov po,eax
+        fidiv po
+        mov eax,ye
+        mov y2,eax
+        fild x2
+        fisub x1
+        fmul st,st(1)
+        fiadd x1
+        fistp x2
+        fld z2
+        fsub z1
+        fmul st,st(1)
+        fadd z1
+        fstp z2
+        fld u2
+        fsub u1
+        fmul st,st(1)
+        fadd u1
+        fstp u2
+        fld v2
+        fsub v1
+        fmulp st(1),st
+        fadd v1
+        fstp v2
+
+co6p:   mov eax,ys
+        cmp y2,eax
+        jge co7p
+        cmp y1,eax
+        jl ne0p
+        mov eax,ys
+        sub eax,y2
+        mov po,eax
+        fild po
+        mov eax,y1
+        sub eax,y2
+        mov po,eax
+        fidiv po
+        mov eax,ys
+        mov y2,eax
+        fild x1
+        fisub x2
+        fmul st,st(1)
+        fiadd x2
+        fistp x2
+        fld z1
+        fsub z2
+        fmul st,st(1)
+        fadd z2
+        fstp z2
+        fld u1
+        fsub u2
+        fmul st,st(1)
+        fadd u2
+        fstp u2
+        fld v1
+        fsub v2
+        fmulp st(1),st
+        fadd v2
+        fstp v2
+
+co7p:   mov eax,ye
+        cmp y1,eax
+        jle co8p
+        cmp y2,eax
+        jg ne0p
+        mov eax,ye
+        sub eax,y2
+        mov po,eax
+        fild po
+        mov eax,y1
+        sub eax,y2
+        mov po,eax
+        fidiv po
+        mov eax,ye
+        mov y1,eax
+        fild x1
+        fisub x2
+        fmul st,st(1)
+        fiadd x2
+        fistp x1
+        fld z1
+        fsub z2
+        fmul st,st(1)
+        fadd z2
+        fstp z1
+        fld u1
+        fsub u2
+        fmul st,st(1)
+        fadd u2
+        fstp u1
+        fld v1
+        fsub v2
+        fmulp st(1),st
+        fadd v2
+        fstp v1
+
+co8p:   mov eax,x1
+        stosd
+        mov eax,y1
+        stosd
+        mov eax,z1
+        stosd
+        mov eax,u1
+        stosd
+        mov eax,v1
+        stosd
+        mov eax,x2
+        stosd
+        mov eax,y2
+        stosd
+        mov eax,z2
+        stosd
+        mov eax,u2
+        stosd
+        mov eax,v2
+        stosd
+
+        inc edges
+
+ne0p:   cmp c1p,2
+        jne no1p
+        mov c1p,0
+        mov eax,a0
+        mov x1,eax
+        mov eax,a1
+        mov y1,eax
+        mov eax,a2
+        mov z1,eax
+        mov eax,a3
+        mov u1,eax
+        mov eax,a4
+        mov v1,eax
+        mov eax,a5
+        mov x2,eax
+        mov eax,a6
+        mov y2,eax
+        mov eax,a7
+        mov z2,eax
+        mov eax,a8
+        mov u2,eax
+        mov eax,a9
+        mov v2,eax
+        jmp go0p
+
+no1p:   cmp c2p,2
+        jne no2p
+        mov c2p,0
+        mov eax,b5
+        mov x1,eax
+        mov eax,b6
+        mov y1,eax
+        mov eax,b7
+        mov z1,eax
+        mov eax,b8
+        mov u1,eax
+        mov eax,b9
+        mov v1,eax
+        mov eax,b0
+        mov x2,eax
+        mov eax,b1
+        mov y2,eax
+        mov eax,b2
+        mov z2,eax
+        mov eax,b3
+        mov u2,eax
+        mov eax,b4
+        mov v2,eax
+        jmp co4p
+
+no2p:   cmp c3p,2
+        jne no3p
+        mov c3p,0
+        mov eax,c5
+        mov x1,eax
+        mov eax,c6
+        mov y1,eax
+        mov eax,c7
+        mov z1,eax
+        mov eax,c8
+        mov u1,eax
+        mov eax,c9
+        mov v1,eax
+        mov eax,c0
+        mov x2,eax
+        mov eax,c1
+        mov y2,eax
+        mov eax,c2
+        mov z2,eax
+        mov eax,c3
+        mov u2,eax
+        mov eax,c4
+        mov v2,eax
+        jmp co4p
+
+no3p:   add esi,4
+        dec ecx
+        jnz my0p
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+mo1p            dd 256 dup (0,0,0,0,0)
+mo2p            dd 256 dup (0,0,0,0,0)
+
+help            dd 0,0
+po              dd 0,16
+
+s1              dd 0
+s2              dd 0
+p1              dd 0
+p2              dd 0
+
+pz1             dd 0
+pz2             dd 0
+
+_z1             dd 0
+_z2             dd 0
+
+zet             dd 0
+dzet            dd 0
+
+y_offs          dd 0
+tab_offs        dd 0
+
+;ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ
+
+PCM_Draw:
+        lea esi,poly
+        lea edi,[esi+20]
+        mov help,256
+        mov help+4,0
+
+line:   push esi edi
+
+        mov eax,[esi+4]
+        mov ebx,[edi+4]
+
+        lea edx,mo1p
+
+        cmp eax,ebx
+        je zero
+        jl pr_1
+
+        mov ecx,eax
+        mov eax,ebx
+        mov ebx,ecx
+
+        mov ecx,esi
+        mov esi,edi
+        mov edi,ecx
+
+        lea edx,mo2p
+
+pr_1:   cmp help,eax
+        jle pr_2
+        mov help,eax
+
+pr_2:   cmp help+4,ebx
+        jge pr_3
+        mov help+4,ebx
+
+pr_3:   sub ebx,eax
+        mov po,ebx
+
+        fld1
+        fidiv po
+        fild dptr [esi]
+        fild dptr [edi]
+        fsub st,st(1)
+        fmul st,st(2)
+        fstp x2
+        fstp x1
+        fld dptr [esi+8]
+        fld dptr [edi+8]
+        fsub st,st(1)
+        fmul st,st(2)
+        fstp z2
+        fstp z1
+        fld dptr [esi+12]
+        fld dptr [edi+12]
+        fsub st,st(1)
+        fmul st,st(2)
+        fstp u2
+        fstp u1
+        fld dptr [esi+16]
+        fld dptr [edi+16]
+        fsub st,st(1)
+        fmulp st(2),st
+        fstp v1
+        fstp v2
+
+        shl eax,4
+        add eax,edx
+
+pr_4:   fld x1
+        fist dptr [eax]
+        fadd x2
+        fstp x1
+        fld z1
+        fst dptr [eax+4]
+        fadd z2
+        fstp z1
+        fld u1
+        fst dptr [eax+8]
+        fadd u2
+        fstp u1
+        fld v1
+        fst dptr [eax+12]
+        fadd v2
+        fstp v1
+        add eax,16
+        dec ebx
+        jnz pr_4
+
+zero:   pop edi esi
+        add esi,40
+        add edi,40
+        dec edges
+        jnz line
+
+        mov ebp,help
+        sub help+4,ebp
+        jle here
+        mov esi,ebp
+        shl esi,4
+        mov y_offs,ebp
+        mov tab_offs,esi
+
+draw:   mov ebx,tab_offs
+        mov ebp,y_offs
+
+        mov edi,mo1p[ebx]
+        mov ecx,mo2p[ebx]
+
+        sub ecx,edi
+        jle skip
+        mov po,ecx
+
+        add edi,edi
+        mov esi,YTAB_Addr
+        add edi,[esi+ebp*4]
+
+        mov esi,edi
+        sub esi,BUF_Addr
+        add esi,esi
+        add esi,ZBUF_Addr
+
+        fld1
+        fdiv mo1p[ebx+4]
+        fld mo1p[ebx+8]
+        fmul st,st(1)
+        fistp s1
+        fld mo1p[ebx+12]
+        fmulp st(1),st
+        fistp s2
+
+        fld mo1p[ebx+4]
+        fstp pz1
+
+        sub ecx,16
+        jle pr_7
+
+        fild po+4
+        fidiv po
+        fld mo1p[ebx+4]
+        fld mo2p[ebx+4]
+        fsub st,st(1)
+        fmul st,st(2)
+        fstp z2
+        fstp z1
+        fld mo1p[ebx+8]
+        fld mo2p[ebx+8]
+        fsub st,st(1)
+        fmul st,st(2)
+        fstp u2
+        fstp u1
+        fld mo1p[ebx+12]
+        fld mo2p[ebx+12]
+        fsub st,st(1)
+        fmulp st(2),st
+        fstp v1
+        fstp v2
+
+pr_5:   sub po,16
+        jl pr_6
+
+        fld1
+        fld z1
+        fst _z1
+        fadd z2
+        fst _z2
+        fst pz1
+        fst z1
+        fdivp st(1),st
+
+        fld u1
+        fadd u2
+        fst u1
+        fmul st,st(1)
+        fistp p1
+
+        fld v1
+        fadd v2
+        fst v1
+        fmulp st(1),st
+        fistp p2
+
+        fld1
+        fdiv _z1
+        fst _z1
+        fistp zet
+
+        fld1
+        fdiv _z2
+        fstp _z2
+
+        fld _z2
+        fsub _z1
+        fidiv po+4
+        fistp dzet
+
+        mov edx,s1
+        mov eax,s2
+        mov ecx,p1
+        mov ebx,p2
+        mov s1,ecx
+        mov s2,ebx
+
+        sub ecx,edx
+        sub ebx,eax
+
+        sar ecx,4
+        sar ebx,4
+
+        shl edx,16
+        mov dx,ax
+        shl ecx,16
+        mov cx,bx
+
+        mov eax,zet
+        mov ebp,dzet
+
+        ofs=0
+        rept 16
+        local zskip
+
+        cmp [esi+ofs*2],eax
+        jl zskip
+        mov [esi+ofs*2],eax
+
+        movzx ebx,dh
+        shld ebx,edx,8
+        mov bx,fs:[ebx*2]
+        mov [edi+ofs],bx
+
+zskip:  add edx,ecx
+        add eax,ebp
+
+        ofs=ofs+2
+        endm
+
+        add esi,64
+        add edi,32
+        jmp pr_5
+
+pr_6:   mov ecx,po
+pr_7:   add ecx,16
+        je skip
+        mov po,ecx
+
+        mov ebx,tab_offs
+
+        fld mo2p[ebx+4]
+        fstp pz2
+
+        fld1
+        fdiv pz1
+        fstp z1
+
+        fld1
+        fdiv pz2
+        fstp z2
+
+        fld z1
+        fistp zet
+
+        fld z2
+        fsub z1
+        fidiv po
+        fistp dzet
+
+        fld1
+        fdiv mo2p[ebx+4]
+        fld mo2p[ebx+8]
+        fmul st,st(1)
+        fistp p1
+        fld mo2p[ebx+12]
+        fmulp st(1),st
+        fistp p2
+
+        mov eax,p1
+        sub eax,s1
+        cdq
+        idiv ecx
+        mov wptr patch+4,ax
+
+        mov eax,p2
+        sub eax,s2
+        cdq
+        idiv ecx
+        mov wptr patch+2,ax
+
+        mov edx,s1
+        shl edx,16
+        mov dx,wptr s2
+
+        mov eax,zet
+        mov ebp,dzet
+
+pr_8:   cmp [esi],eax
+        jl patch
+        mov [esi],eax
+
+        movzx ebx,dh
+        shld ebx,edx,8
+        mov bx,fs:[ebx*2]
+        mov [edi],bx
+
+patch:  add edx,11111111h
+        add eax,ebp
+        add edi,2
+        add esi,4
+        dec ecx
+        jnz pr_8
+
+skip:   inc y_offs
+        add tab_offs,16
+        dec help+4
+        jnz draw
+here:   ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+;
+;*** Normal Mapping
+;
+
+NT_Clip:
+        lea edi,poly
+        mov edges,0
+        mov c1p,0
+        mov c2p,0
+        mov c3p,0
+        mov ecx,3
+
+my1p:   mov ebx,[esi]
+        mov edx,[esi+4]
+
+NT_patch0:
+        mov eax,11111111h[ebx*2+ebx]
+        mov x1,eax
+NT_patch1:
+        mov eax,11111111h[ebx*2+ebx]
+        mov y1,eax
+NT_patch2:
+        fld dptr 11111111h[ebx*2+ebx]
+        fist q1
+        fstp z1
+        mov eax,[ebp+ebx*2]
+        mov u1,eax
+        mov eax,[ebp+ebx*2+4]
+        mov v1,eax
+
+NT_patch3:
+        mov eax,11111111h[edx*2+edx]
+        mov x2,eax
+NT_patch4:
+        mov eax,11111111h[edx*2+edx]
+        mov y2,eax
+NT_patch5:
+        fld dptr 11111111h[edx*2+edx]
+        fist q2
+        fstp z2
+        mov eax,[ebp+edx*2]
+        mov u2,eax
+        mov eax,[ebp+edx*2+4]
+        mov v2,eax
+
+ZC_patch3:
+        cmp q1,11111111h
+        jge ZC_patch5
+ZC_patch4:
+        cmp q2,11111111h
+        jl ne1p
+        inc c1p
+        fld zc
+        fsub z1
+        fld z2
+        fsub z1
+        fdivp st(1),st
+        fld1
+        fdiv zc
+        fld x2
+        fsub x1
+        fmul st,st(2)
+        fadd x1
+        fmul zm
+        fmul st,st(1)
+        fadd px
+        fist a4
+        fistp x1
+        fld y2
+        fsub y1
+        fmul st,st(2)
+        fadd y1
+        fmul zm+4
+        fmulp st(1),st
+        fadd py
+        fist a5
+        fistp y1
+
+        fld z2
+        fsub z1
+        fmul st,st(1)
+        fadd z1
+        fst a6a
+        fstp z1
+
+        fld u2
+        fsub u1
+        fmul st,st(1)
+        fadd u1
+        fst a6
+        fstp u1
+        fld v2
+        fsub v1
+        fmulp st(1),st
+        fadd v1
+        fst a7
+        fstp v1
+
+NT_patch6:
+        mov eax,11111111h[edx*2]
+        mov x2,eax
+NT_patch7:
+        mov eax,11111111h[edx*2]
+        mov y2,eax
+        jmp go1p
+
+ZC_patch5:
+        cmp q2,11111111h
+        jge NT_patch10
+        inc c1p
+        fld zc
+        fsub z2
+        fld z1
+        fsub z2
+        fdivp st(1),st
+        fld1
+        fdiv zc
+        fld x1
+        fsub x2
+        fmul st,st(2)
+        fadd x2
+        fmul zm
+        fmul st,st(1)
+        fadd px
+        fist a0
+        fistp x2
+        fld y1
+        fsub y2
+        fmul st,st(2)
+        fadd y2
+        fmul zm+4
+        fmulp st(1),st
+        fadd py
+        fist a1
+        fistp y2
+
+        fld z1
+        fsub z2
+        fmul st,st(1)
+        fadd z2
+        fst a2a
+        fstp z2
+
+        fld u1
+        fsub u2
+        fmul st,st(1)
+        fadd u2
+        fst a2
+        fstp u2
+        fld v1
+        fsub v2
+        fmulp st(1),st
+        fadd v2
+        fst a3
+        fstp v2
+
+NT_patch8:
+        mov eax,11111111h[ebx*2]
+        mov x1,eax
+NT_patch9:
+        mov eax,11111111h[ebx*2]
+        mov y1,eax
+        jmp go1p
+
+NT_patch10:
+        mov eax,11111111h[ebx*2]
+        mov x1,eax
+NT_patch11:
+        mov eax,11111111h[ebx*2]
+        mov y1,eax
+
+NT_patch12:
+        mov eax,11111111h[edx*2]
+        mov x2,eax
+NT_patch13:
+        mov eax,11111111h[edx*2]
+        mov y2,eax
+
+go1p:   mov eax,xs
+        cmp x1,eax
+        jge ru1p
+        cmp x2,eax
+        jl ne1p
+        inc c2p
+        mov eax,xs
+        sub eax,x1
+        mov po,eax
+        fild po
+        mov eax,x2
+        sub eax,x1
+        mov po,eax
+        fidiv po
+        mov eax,xs
+        mov x1,eax
+        mov b0,eax
+        fild y2
+        fisub y1
+        fmul st,st(1)
+        fiadd y1
+        fist b1
+        fistp y1
+
+        fld z2
+        fsub z1
+        fmul st,st(1)
+        fadd z1
+        fst b2b
+        fstp z1
+
+        fld u2
+        fsub u1
+        fmul st,st(1)
+        fadd u1
+        fst b2
+        fstp u1
+        fld v2
+        fsub v1
+        fmulp st(1),st
+        fadd v1
+        fst b3
+        fstp v1
+
+ru1p:   mov eax,xe
+        cmp x2,eax
+        jle ru2p
+        cmp x1,eax
+        jg ne1p
+        inc c3p
+        mov eax,xe
+        sub eax,x1
+        mov po,eax
+        fild po
+        mov eax,x2
+        sub eax,x1
+        mov po,eax
+        fidiv po
+        mov eax,xe
+        mov x2,eax
+        mov c4,eax
+        fild y2
+        fisub y1
+        fmul st,st(1)
+        fiadd y1
+        fist c5
+        fistp y2
+
+        fld z2
+        fsub z1
+        fmul st,st(1)
+        fadd z1
+        fst c6c
+        fstp z2
+
+        fld u2
+        fsub u1
+        fmul st,st(1)
+        fadd u1
+        fst c6
+        fstp u2
+        fld v2
+        fsub v1
+        fmulp st(1),st
+        fadd v1
+        fst c7
+        fstp v2
+
+ru2p:   mov eax,xs
+        cmp x2,eax
+        jge ru3p
+        cmp x1,eax
+        jl ne1p
+        inc c2p
+        mov eax,xs
+        sub eax,x2
+        mov po,eax
+        fild po
+        mov eax,x1
+        sub eax,x2
+        mov po,eax
+        fidiv po
+        mov eax,xs
+        mov x2,eax
+        mov b4,eax
+        fild y1
+        fisub y2
+        fmul st,st(1)
+        fiadd y2
+        fist b5
+        fistp y2
+
+        fld z1
+        fsub z2
+        fmul st,st(1)
+        fadd z2
+        fst b6b
+        fstp z2
+
+        fld u1
+        fsub u2
+        fmul st,st(1)
+        fadd u2
+        fst b6
+        fstp u2
+        fld v1
+        fsub v2
+        fmulp st(1),st
+        fadd v2
+        fst b7
+        fstp v2
+
+ru3p:   mov eax,xe
+        cmp x1,eax
+        jle ru4p
+        cmp x2,eax
+        jg ne1p
+        inc c3p
+        mov eax,xe
+        sub eax,x2
+        mov po,eax
+        fild po
+        mov eax,x1
+        sub eax,x2
+        mov po,eax
+        fidiv po
+        mov eax,xe
+        mov x1,eax
+        mov c0,eax
+        fild y1
+        fisub y2
+        fmul st,st(1)
+        fiadd y2
+        fist c1
+        fistp y1
+
+        fld z1
+        fsub z2
+        fmul st,st(1)
+        fadd z2
+        fst c2c
+        fstp z1
+
+        fld u1
+        fsub u2
+        fmul st,st(1)
+        fadd u2
+        fst c2
+        fstp u1
+        fld v1
+        fsub v2
+        fmulp st(1),st
+        fadd v2
+        fst c3
+        fstp v1
+
+ru4p:   mov eax,ys
+        cmp y1,eax
+        jge ru5p
+        cmp y2,eax
+        jl ne1p
+        mov eax,ys
+        sub eax,y1
+        mov po,eax
+        fild po
+        mov eax,y2
+        sub eax,y1
+        mov po,eax
+        fidiv po
+        mov eax,ys
+        mov y1,eax
+        fild x2
+        fisub x1
+        fmul st,st(1)
+        fiadd x1
+        fistp x1
+
+        fld z2
+        fsub z1
+        fmul st,st(1)
+        fadd z1
+        fstp z1
+
+        fld u2
+        fsub u1
+        fmul st,st(1)
+        fadd u1
+        fstp u1
+        fld v2
+        fsub v1
+        fmulp st(1),st
+        fadd v1
+        fstp v1
+
+ru5p:   mov eax,ye
+        cmp y2,eax
+        jle ru6p
+        cmp y1,eax
+        jg ne1p
+        mov eax,ye
+        sub eax,y1
+        mov po,eax
+        fild po
+        mov eax,y2
+        sub eax,y1
+        mov po,eax
+        fidiv po
+        mov eax,ye
+        mov y2,eax
+        fild x2
+        fisub x1
+        fmul st,st(1)
+        fiadd x1
+        fistp x2
+
+        fld z2
+        fsub z1
+        fmul st,st(1)
+        fadd z1
+        fstp z2
+
+        fld u2
+        fsub u1
+        fmul st,st(1)
+        fadd u1
+        fstp u2
+        fld v2
+        fsub v1
+        fmulp st(1),st
+        fadd v1
+        fstp v2
+
+ru6p:   mov eax,ys
+        cmp y2,eax
+        jge ru7p
+        cmp y1,eax
+        jl ne1p
+        mov eax,ys
+        sub eax,y2
+        mov po,eax
+        fild po
+        mov eax,y1
+        sub eax,y2
+        mov po,eax
+        fidiv po
+        mov eax,ys
+        mov y2,eax
+        fild x1
+        fisub x2
+        fmul st,st(1)
+        fiadd x2
+        fistp x2
+
+        fld z1
+        fsub z2
+        fmul st,st(1)
+        fadd z2
+        fstp z2
+
+        fld u1
+        fsub u2
+        fmul st,st(1)
+        fadd u2
+        fstp u2
+        fld v1
+        fsub v2
+        fmulp st(1),st
+        fadd v2
+        fstp v2
+
+ru7p:   mov eax,ye
+        cmp y1,eax
+        jle ru8p
+        cmp y2,eax
+        jg ne1p
+        mov eax,ye
+        sub eax,y2
+        mov po,eax
+        fild po
+        mov eax,y1
+        sub eax,y2
+        mov po,eax
+        fidiv po
+        mov eax,ye
+        mov y1,eax
+        fild x1
+        fisub x2
+        fmul st,st(1)
+        fiadd x2
+        fistp x1
+
+        fld z1
+        fsub z2
+        fmul st,st(1)
+        fadd z2
+        fstp z1
+
+        fld u1
+        fsub u2
+        fmul st,st(1)
+        fadd u2
+        fstp u1
+        fld v1
+        fsub v2
+        fmulp st(1),st
+        fadd v2
+        fstp v1
+
+ru8p:   mov eax,x1
+        stosd
+        mov eax,y1
+        stosd
+        mov eax,z1
+        stosd
+        mov eax,u1
+        stosd
+        mov eax,v1
+        stosd
+
+        mov eax,x2
+        stosd
+        mov eax,y2
+        stosd
+        mov eax,z2
+        stosd
+        mov eax,u2
+        stosd
+        mov eax,v2
+        stosd
+
+        inc edges
+
+ne1p:   cmp c1p,2
+        jne ns1p
+        mov c1p,0
+        mov eax,a0
+        mov x1,eax
+        mov eax,a1
+        mov y1,eax
+        mov eax,a2a
+        mov z1,eax
+        mov eax,a2
+        mov u1,eax
+        mov eax,a3
+        mov v1,eax
+        mov eax,a4
+        mov x2,eax
+        mov eax,a5
+        mov y2,eax
+        mov eax,a6a
+        mov z2,eax
+        mov eax,a6
+        mov u2,eax
+        mov eax,a7
+        mov v2,eax
+        jmp go1p
+
+ns1p:   cmp c2p,2
+        jne ns2p
+        mov c2p,0
+        mov eax,b4
+        mov x1,eax
+        mov eax,b5
+        mov y1,eax
+        mov eax,b6b
+        mov z1,eax
+        mov eax,b6
+        mov u1,eax
+        mov eax,b7
+        mov v1,eax
+        mov eax,b0
+        mov x2,eax
+        mov eax,b1
+        mov y2,eax
+        mov eax,b2b
+        mov z2,eax
+        mov eax,b2
+        mov u2,eax
+        mov eax,b3
+        mov v2,eax
+        jmp ru4p
+
+ns2p:   cmp c3p,2
+        jne ns3p
+        mov c3p,0
+        mov eax,c4
+        mov x1,eax
+        mov eax,c5
+        mov y1,eax
+        mov eax,c6c
+        mov z1,eax
+        mov eax,c6
+        mov u1,eax
+        mov eax,c7
+        mov v1,eax
+        mov eax,c0
+        mov x2,eax
+        mov eax,c1
+        mov y2,eax
+        mov eax,c2c
+        mov z2,eax
+        mov eax,c2
+        mov u2,eax
+        mov eax,c3
+        mov v2,eax
+        jmp ru4p
+
+ns3p:   add esi,4
+        dec ecx
+        jnz my1p
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+NT_Draw:
+        lea esi,poly
+        lea edi,[esi+20]
+        mov help,256
+        mov help+4,0
+
+ln1p:   push esi edi
+
+        mov eax,[esi+4]
+        mov ebx,[edi+4]
+
+        lea edx,mo1p
+
+        cmp eax,ebx
+        je ze1p
+        jl go_1
+
+        mov ecx,eax
+        mov eax,ebx
+        mov ebx,ecx
+
+        mov ecx,esi
+        mov esi,edi
+        mov edi,ecx
+
+        lea edx,mo2p
+
+go_1:   cmp help,eax
+        jle go_2
+        mov help,eax
+
+go_2:   cmp help+4,ebx
+        jge go_3
+        mov help+4,ebx
+
+go_3:   sub ebx,eax
+        mov po,ebx
+
+        shl eax,4
+        lea ebp,[edx+eax]
+
+        mov ecx,[esi]
+        shl ecx,16
+        mov eax,[edi]
+        shl eax,16
+        sub eax,ecx
+        cdq
+        idiv ebx
+        mov dptr in1a+2,eax
+
+        fld1
+        fidiv po
+
+        fld dptr [esi+8]
+        fld dptr [edi+8]
+        fsub st,st(1)
+        fmul st,st(2)
+        fistp dptr in4a+1
+        fistp z1
+
+        fld dptr [esi+12]
+        fld dptr [edi+12]
+        fsub st,st(1)
+        fmul st,st(2)
+        fistp dptr in2a+2
+        fistp u1
+
+        fld dptr [esi+16]
+        fld dptr [edi+16]
+        fsub st,st(1)
+        fmulp st(2),st
+        fistp v1
+        fistp dptr in3a+2
+
+        mov esi,u1
+        mov edi,v1
+        mov eax,z1
+
+go_4:   mov [ebp],ecx
+        mov [ebp+4],esi
+        mov [ebp+8],edi
+        mov [ebp+12],eax
+in1a:   add ecx,11111111h
+in2a:   add esi,11111111h
+in3a:   add edi,11111111h
+in4a:   add eax,11111111h
+        add ebp,16
+        dec ebx
+        jnz go_4
+
+ze1p:   pop edi esi
+        add esi,40
+        add edi,40
+        dec edges
+        jnz ln1p
+
+        mov esi,help
+        sub help+4,esi
+        jle he1p
+        mov y_offs,esi
+        shl esi,4
+
+fp1p:   mov edi,mo1p[esi]
+        mov ecx,mo2p[esi]
+
+        sar edi,16
+        sar ecx,16
+
+        sub ecx,edi
+        jle sk1p
+
+        add edi,edi
+        mov ebp,y_offs
+        mov ebx,YTAB_Addr
+        add edi,[ebx+ebp*4]
+
+        mov ebp,edi
+        sub ebp,BUF_Addr
+        add ebp,ebp
+        add ebp,ZBUF_Addr
+
+        mov eax,mo2p[esi+4]
+        sub eax,mo1p[esi+4]
+        cdq
+        idiv ecx
+        mov wptr te1p+4,ax
+
+        mov eax,mo2p[esi+8]
+        sub eax,mo1p[esi+8]
+        cdq
+        idiv ecx
+        mov wptr te1p+2,ax
+
+        mov eax,mo2p[esi+12]
+        sub eax,mo1p[esi+12]
+        cdq
+        idiv ecx
+        mov dptr te2p+1,eax
+
+        mov edx,mo1p[esi+4]
+        shl edx,16
+        mov dx,wptr mo1p[esi+8]
+
+        mov eax,mo1p[esi+12]
+
+go_5:   cmp [ebp],eax
+        jl te1p
+        mov [ebp],eax
+
+        movzx ebx,dh
+        shld ebx,edx,8
+        mov bx,fs:[ebx*2]
+        mov [edi],bx
+
+te1p:   add edx,11111111h
+te2p:   add eax,11111111h
+        add edi,2
+        add ebp,4
+        dec ecx
+        jnz go_5
+
+sk1p:   inc y_offs
+        add esi,16
+        dec help+4
+        jnz fp1p
+he1p:   ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+NT2_Draw:
+        lea esi,poly
+        lea edi,[esi+20]
+        mov help,256
+        mov help+4,0
+
+ln1pt:  push esi edi
+
+        mov eax,[esi+4]
+        mov ebx,[edi+4]
+
+        lea edx,mo1p
+
+        cmp eax,ebx
+        je ze1pt
+        jl go_1t
+
+        mov ecx,eax
+        mov eax,ebx
+        mov ebx,ecx
+
+        mov ecx,esi
+        mov esi,edi
+        mov edi,ecx
+
+        lea edx,mo2p
+
+go_1t:  cmp help,eax
+        jle go_2t
+        mov help,eax
+
+go_2t:  cmp help+4,ebx
+        jge go_3t
+        mov help+4,ebx
+
+go_3t:  sub ebx,eax
+        mov po,ebx
+
+        shl eax,4
+        lea ebp,[edx+eax]
+
+        mov ecx,[esi]
+        shl ecx,16
+        mov eax,[edi]
+        shl eax,16
+        sub eax,ecx
+        cdq
+        idiv ebx
+        mov dptr in1at+2,eax
+
+        fld1
+        fidiv po
+
+        fld dptr [esi+8]
+        fld dptr [edi+8]
+        fsub st,st(1)
+        fmul st,st(2)
+        fistp dptr in4at+1
+        fistp z1
+
+        fld dptr [esi+12]
+        fld dptr [edi+12]
+        fsub st,st(1)
+        fmul st,st(2)
+        fistp dptr in2at+2
+        fistp u1
+
+        fld dptr [esi+16]
+        fld dptr [edi+16]
+        fsub st,st(1)
+        fmulp st(2),st
+        fistp v1
+        fistp dptr in3at+2
+
+        mov esi,u1
+        mov edi,v1
+        mov eax,z1
+
+go_4t:  mov [ebp],ecx
+        mov [ebp+4],esi
+        mov [ebp+8],edi
+        mov [ebp+12],eax
+in1at:  add ecx,11111111h
+in2at:  add esi,11111111h
+in3at:  add edi,11111111h
+in4at:  add eax,11111111h
+        add ebp,16
+        dec ebx
+        jnz go_4t
+
+ze1pt:  pop edi esi
+        add esi,40
+        add edi,40
+        dec edges
+        jnz ln1pt
+
+        mov esi,help
+        sub help+4,esi
+        jle he1pt
+        mov y_offs,esi
+        shl esi,4
+
+fp1pt:  mov edi,mo1p[esi]
+        mov ecx,mo2p[esi]
+
+        sar edi,16
+        sar ecx,16
+
+        sub ecx,edi
+        jle sk1pt
+
+        add edi,edi
+        mov ebp,y_offs
+        mov ebx,YTAB_Addr
+        add edi,[ebx+ebp*4]
+
+        mov ebp,edi
+        sub ebp,BUF_Addr
+        add ebp,ebp
+        add ebp,ZBUF_Addr
+
+        mov eax,mo2p[esi+4]
+        sub eax,mo1p[esi+4]
+        cdq
+        idiv ecx
+        mov wptr te1pt+4,ax
+
+        mov eax,mo2p[esi+8]
+        sub eax,mo1p[esi+8]
+        cdq
+        idiv ecx
+        mov wptr te1pt+2,ax
+
+        mov eax,mo2p[esi+12]
+        sub eax,mo1p[esi+12]
+        cdq
+        idiv ecx
+        mov dptr te2pt+1,eax
+
+        mov edx,mo1p[esi+4]
+        shl edx,16
+        mov dx,wptr mo1p[esi+8]
+
+        mov eax,mo1p[esi+12]
+
+go_5t:  cmp [ebp],eax
+        jl te1pt
+        mov [ebp],eax
+
+        push eax ebx ecx edx ebp
+
+        movzx ebx,dh
+        shld ebx,edx,8
+        mov ax,fs:[ebx*2]
+        mov bp,ax
+        mov bx,ax
+
+        and eax,11111b
+        and ebx,11111100000b
+        and ebp,1111100000000000b
+
+        add eax,8
+        add ebx,8
+        add ebp,8
+
+        ;sub eax,lb   ;b
+        ;sub ebx,lg   ;g
+        ;sub ebp,lr   ;r
+
+        or eax,eax   ;b
+        jns okr2
+        xor eax,eax
+
+okr2:   or ebx,ebx   ;g
+        jns okg2
+        xor ebx,ebx
+
+okg2:   or ebp,ebp   ;r
+        jns okb2
+        xor ebp,ebp
+
+okb2:   mov dx,[edi]
+
+        mov cx,dx
+        and ecx,11111b
+        add eax,ecx
+
+        mov cx,dx
+        and ecx,11111100000b
+        add ebx,ecx
+
+        and edx,1111100000000000b
+        add ebp,edx
+
+        cmp eax,31              ;b
+        jl ok_b2
+        mov eax,31
+
+ok_b2:  cmp ebx,31*64           ;g
+        jl ok_g2
+        mov ebx,31*64
+
+ok_g2:  cmp ebp,31*2048         ;r
+        jl ok_r2
+        mov ebp,31*2048
+
+ok_r2:  or ax,bx                ;r+g+b
+        or ax,bp
+
+        mov [edi],ax
+
+        pop ebp edx ecx ebx eax
+
+te1pt:  add edx,11111111h
+te2pt:  add eax,11111111h
+        add edi,2
+        add ebp,4
+        dec ecx
+        jnz go_5t
+
+sk1pt:  inc y_offs
+        add esi,16
+        dec help+4
+        jnz fp1pt
+he1pt:  ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+Patch_Code:
+        mov eax,DST_Addr
+        mov dptr SE_patch4+3,eax
+        mov dptr SE_patch5+3,eax
+        mov dptr SE_patch8+3,eax
+        mov dptr SE_patch11+3,eax
+        mov dptr SE_patch12+3,eax
+        mov dptr PCM_patch0+3,eax
+        mov dptr PCM_patch5+3,eax
+        mov dptr NT_patch0+3,eax
+        mov dptr NT_patch3+3,eax
+        add eax,4
+        mov dptr SE_patch1+3,eax
+        mov dptr SE_patch2+3,eax
+        mov dptr SE_patch9+3,eax
+        mov dptr SE_patch10+3,eax
+        mov dptr SE_patch13+3,eax
+        mov dptr PCM_patch1+3,eax
+        mov dptr PCM_patch6+3,eax
+        mov dptr NT_patch1+3,eax
+        mov dptr NT_patch4+3,eax
+        add eax,4
+        mov dptr SE_patch0+3,eax
+        mov dptr SE_patch3+3,eax
+        mov dptr SE_patch6+3,eax
+        mov dptr SE_patch7+3,eax
+        mov dptr SE_patch14+3,eax
+        mov dptr TRS_patch0+3,eax
+        mov dptr TRS_patch1+3,eax
+        mov dptr TRS_patch2+3,eax
+        mov dptr PCM_patch2+3,eax
+        mov dptr PCM_patch7+3,eax
+        mov dptr NT_patch2+3,eax
+        mov dptr NT_patch5+3,eax
+
+        mov eax,MapUV_Addr
+        mov dptr PCM_patch3+3,eax
+        mov dptr PCM_patch8+3,eax
+        add eax,4
+        mov dptr PCM_patch4+3,eax
+        mov dptr PCM_patch9+3,eax
+
+        mov eax,PXY_Addr
+        mov dptr PCM_patch10+3,eax
+        mov dptr PCM_patch12+3,eax
+        mov dptr PCM_patch14+3,eax
+        mov dptr PCM_patch16+3,eax
+        mov dptr NT_patch6+3,eax
+        mov dptr NT_patch8+3,eax
+        mov dptr NT_patch10+3,eax
+        mov dptr NT_patch12+3,eax
+        add eax,4
+        mov dptr PCM_patch11+3,eax
+        mov dptr PCM_patch13+3,eax
+        mov dptr PCM_patch15+3,eax
+        mov dptr PCM_patch17+3,eax
+        mov dptr NT_patch7+3,eax
+        mov dptr NT_patch9+3,eax
+        mov dptr NT_patch11+3,eax
+        mov dptr NT_patch13+3,eax
+
+        fld zc
+        fist dptr ZC_patch0+6
+        fist dptr ZC_patch1+6
+        fist dptr ZC_patch2+6
+        fist dptr ZC_patch3+6
+        fist dptr ZC_patch4+6
+        fist dptr ZC_patch5+6
+        fistp dptr XY_patch0+6
+
+        mov eax,ObjDef_Addr
+        add eax,8
+        mov dptr SH_patch0+2,eax
+        add eax,4
+        mov dptr SH_patch1+2,eax
+
+        mov eax,TXR_Addr
+        mov dptr TXR_patch0+2,eax
+        mov dptr TXR_patch1+2,eax
+        mov dptr TXR_patch2+2,eax
+
+        mov eax,Flare_Addr
+        mov dptr Flare_Patch+4,eax
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+fx      dd 0    ;flare x pos
+fy      dd 0    ;...
+fz      dd 0
+
+fsx     dd 0    ;size x
+fsy     dd 0    ;size y
+
+fdu     dd 0
+fdv     dd 0
+
+_sx     dd 256.0
+_sy     dd 240.0
+
+_pom    dd 68000.0
+
+_zet    dd 0
+
+lr      dd 0
+lg      dd 0
+lb      dd 0
+
+Put_Flares:
+        mov esi,LDST_Addr
+
+        mov ebp,Frame
+        imul ebp,24
+        imul ebp,lcount
+        add ebp,Light_Addr
+
+        mov ecx,lcount
+
+put_loop:
+        push esi ebp ecx
+
+        fld dptr [esi+8]
+        fistp _zet
+
+        cmp _zet,8
+        jle Bad_Zet
+
+        fld1
+        fdiv dptr [esi+8]
+        fld dptr [esi]
+        fmul zm
+        fmul st,st(1)
+        fadd px
+        fistp fx  ;<--
+        fld dptr [esi+4]
+        fmul zm+4
+        fmulp st(1),st
+        fadd py
+        fistp fy  ;<--
+
+        fld _sx
+        fmul _pom
+        fdiv dptr [esi+8]
+        fistp fsx
+
+        fld _sy
+        fmul _pom
+        fdiv dptr [esi+8]
+        fistp fsy
+
+        fld dptr [esi+8]
+        fistp fz
+
+        mov eax,[ebp+12]
+        shl eax,11
+        mov lr,eax
+        mov eax,[ebp+16]
+        shl eax,6
+        mov lg,eax
+        mov eax,[ebp+20]
+        mov lb,eax
+
+        call Draw_Flare
+
+Bad_Zet:
+        pop ecx ebp esi
+        add esi,12
+        add ebp,24
+        dec ecx
+        jnz put_loop
+        ret
+
+Draw_Flare:
+        cmp fsx,0
+        je No_Flare
+        cmp fsy,0
+        je No_Flare
+
+        mov eax,fsx
+        shr eax,1
+        sub fx,eax
+
+        mov eax,fsy
+        shr eax,1
+        sub fy,eax
+
+        mov ebp,YTAB_Addr
+        mov eax,[ebp+(1*4)]
+        sub eax,BUF_Addr
+        mov dptr ADDpatch2+2,eax
+        add eax,eax
+        mov dptr ADDpatch1+2,eax
+
+        mov edi,fx
+        add edi,edi
+        mov ebx,fy
+        add edi,[ebp+ebx*4]
+
+        mov esi,edi
+        sub esi,BUF_Addr
+        add esi,esi
+        add esi,ZBUF_Addr
+
+        mov eax,256*256
+        mov ebx,fsx
+        cdq
+        idiv ebx
+        mov fdu,eax
+
+        mov eax,256*256
+        mov ebx,fsy
+        cdq
+        idiv ebx
+        mov fdv,eax
+
+        mov eax,fx
+        cmp eax,xe
+        jge No_Flare
+        add eax,fsx
+        cmp eax,xs
+        jle No_Flare
+
+        mov eax,fy
+        cmp eax,ye
+        jge No_Flare
+        add eax,fsy
+        cmp eax,ys
+        jle No_Flare
+
+        mov eax,0
+        mov ebx,0
+
+        mov ebp,xs
+        cmp fx,ebp
+        jge x_left_ok
+        mov eax,fdu
+        mov ebx,fx
+        neg ebx
+        imul ebx
+        sub fsx,ebx
+        mov fx,0
+
+x_left_ok:
+        mov ecx,fx
+        add ecx,fsx
+        cmp ecx,xe
+        jle x_right_ok
+        sub ecx,xe
+        sub fsx,ecx
+
+x_right_ok:
+        mov ebp,ys
+        cmp fy,ebp
+        jge y_up_ok
+        mov ebx,fdv
+        mov ecx,fy
+        neg ecx
+        imul ebx,ecx
+        sub fsy,ecx
+        mov fy,0
+
+y_up_ok:
+        mov ecx,fy
+        add ecx,fsy
+        cmp ecx,ye
+        jle x_down_ok
+        sub ecx,ye
+        sub fsy,ecx
+
+x_down_ok:
+        mov ebp,xs
+        cmp fsx,ebp
+        jle No_Flare
+        mov ebp,ys
+        cmp fsy,ebp
+        jle No_Flare
+
+        mov ebp,fsy
+
+vertical_loop:
+        push eax ebx ebp esi edi
+        and ebx,0ff00h
+        mov ebp,fsx
+
+horizontal_loop:
+        mov ecx,fz
+        cmp [esi],ecx
+        jl noZet
+
+        push eax ebx ecx edx ebp
+
+        mov bl,ah
+
+Flare_Patch:
+        mov ax,11111111h[ebx*2]
+
+        mov bp,ax
+        mov bx,ax
+
+        and eax,11111b
+        and ebx,11111100000b
+        and ebp,1111100000000000b
+
+        sub eax,lb   ;b
+        sub ebx,lg   ;g
+        sub ebp,lr   ;r
+
+        or eax,eax   ;b
+        jns okr
+        xor eax,eax
+
+okr:    or ebx,ebx   ;g
+        jns okg
+        xor ebx,ebx
+
+okg:    or ebp,ebp   ;r
+        jns okb
+        xor ebp,ebp
+
+okb:    mov dx,[edi]
+
+        mov cx,dx
+        and ecx,11111b
+        add eax,ecx
+
+        mov cx,dx
+        and ecx,11111100000b
+        add ebx,ecx
+
+        and edx,1111100000000000b
+        add ebp,edx
+
+        cmp eax,31              ;b
+        jl ok_b
+        mov eax,31
+
+ok_b:   cmp ebx,31*64           ;g
+        jl ok_g
+        mov ebx,31*64
+
+ok_g:   cmp ebp,31*2048         ;r
+        jl ok_r
+        mov ebp,31*2048
+
+ok_r:   or ax,bx                ;r+g+b
+        or ax,bp
+
+        mov [edi],ax
+
+        pop ebp edx ecx ebx eax
+
+noZet:  add eax,fdu
+        add esi,4
+        add edi,2
+        dec ebp
+        jnz horizontal_loop
+
+        pop edi esi ebp ebx eax
+        add ebx,fdv
+ADDpatch1:
+        add esi,11111111h
+ADDpatch2:
+        add edi,11111111h
+        dec ebp
+        jnz vertical_loop
+
+No_Flare:
+        ret
+
+;±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±°±
+
+Frame           dd 0
+
+Control:
+        inc Frame
+        mov eax,SCN_Frames
+        cmp eax,Frame
+        jg ct0p
+        mov Frame,0
+ct0p:   ret
+
+        end

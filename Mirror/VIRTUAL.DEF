@@ -1,0 +1,8 @@
+extern void virt_init ();
+#pragma aux virt_init "_*" parm caller [];
+
+extern void calc_virt ();
+#pragma aux calc_virt "_*" parm caller [];
+
+extern void virt_finish ();
+#pragma aux virt_finish "_*" parm caller [];
